@@ -7,7 +7,7 @@ import pandas as pd
 from rich.console import Console
 from rich.traceback import install
 # from sklearn.model_selection import train_test_split
-from transformers import AutoTokenizer, AutoModelForMaskedLM
+from transformers import AutoTokenizer, AutoModelForMaskedLM, AutoModel
 
 install(show_locals=False)
 console = Console(record=False, soft_wrap=True)
