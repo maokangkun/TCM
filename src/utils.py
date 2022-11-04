@@ -123,6 +123,31 @@ def test_example(tokenizer, mlm_model, feat, index=0):
             out3_token[i+1] = '[red]' + out3_token[i+1] + '[/]'
     out3_text = ''.join(out3_token)
 
+    masked = example
+    masked = masked[:63] + '[MASK][MASK]' + masked[65:]
+    masked = masked[:-3] + '[MASK][MASK]' + masked[-1:]
+    masked_idx = tokenizer.encode(masked)
+    masked_tensor = torch.tensor([masked_idx])
+    out4 = mlm_model(masked_tensor)
+    out4_token_idx = out4.logits[0].argmax(1).tolist()
+    out4_token = tokenizer.convert_ids_to_tokens(out4_token_idx)
+    for i in range(len(tokenized_text)):
+        if out4_token[i+1] != tokenized_text[i]:
+            out4_token[i+1] = '[red]' + out4_token[i+1] + '[/]'
+    out4_text = ''.join(out4_token)
+
+    prompt = example + '病证：[MASK][MASK][MASK][MASK]型失眠。'
+    prompt_idx = tokenizer.encode(prompt)
+    prompt_tensor = torch.tensor([prompt_idx])
+    out5 = mlm_model(prompt_tensor)
+    out5_token_idx = out5.logits[0].argmax(1).tolist()
+    out5_token = tokenizer.convert_ids_to_tokens(out5_token_idx)
+    for i in range(1, len(prompt_idx)-1):
+        if out5_token_idx[i] != prompt_idx[i]:
+            out5_token[i] = '[red]' + out5_token[i] + '[/]'
+    out5_text = ''.join(out5_token)
+
+
     print(f'tokenized: {tokenized_text}')
     print(f'tokenized index: {token_idx}')
     print(f'encode index: {encode_idx}')
@@ -135,6 +160,14 @@ def test_example(tokenizer, mlm_model, feat, index=0):
     print(f'model out text: {out2_text}')
     print(f'model out (batch): {out2_token_idx}')
     print(f'model out text: {out2_text}')
+
+    print('MLM test:')
+    print(f'masked input: {masked}')
+    print(f'model output: {out4_text}')
+    print('Prompt test:')
+    print(f'prompt: {prompt}')
+    print(f'model output: {out5_text}')
+    
 
 class TCMDataset(Dataset):
     def __init__(self, feat, label):
